@@ -1,6 +1,6 @@
-# VRPRO Accountancy Website
+# Beacon Accounting Website
 
-A professional, responsive website for VRPRO Accountancy - a UK-focused accounting outsourcing service provider based in India.
+A professional, responsive website for Beacon Accounting - a UK-focused accounting outsourcing service provider based in India.
 
 ## Features
 
@@ -190,14 +190,14 @@ All forms include:
 
 ## Support
 
-For technical support or customization requests, contact your web developer or VRPRO Accountancy technical team.
+For technical support or customization requests, contact your web developer or Beacon Accounting technical team.
 
 ## License
 
-This website is proprietary to VRPRO Accountancy. All rights reserved.
+This website is proprietary to Beacon Accounting. All rights reserved.
 
 ---
 
 **Last Updated**: September 2025
 **Version**: 1.0
-**Contact**: VRPRO Accountancy Technical Team
+**Contact**: Beacon Accounting Technical Team

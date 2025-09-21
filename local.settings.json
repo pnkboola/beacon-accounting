@@ -1,0 +1,6 @@
+{
+    "Host": {
+        "LocalHttpPort": 3000,
+        "CORS": "*"
+    }
+}
