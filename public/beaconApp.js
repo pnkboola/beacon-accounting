@@ -204,10 +204,10 @@ function submitContact(event) {
   event.target.reset();
 
   // In production, send data to server
-  console.log('Contact form submitted:', data);
+  console.log('Contact form submitted:', JSON.stringify(data));
 
   // Example API call (uncomment in production):
-  // submitToAPI('contact', data);
+  submitToAPI('contact', data);
 }
 
 function submitQuote(event) {
@@ -428,7 +428,8 @@ function showMessage(message, type) {
 // API Integration (for production use)
 async function submitToAPI(endpoint, data) {
   try {
-    const response = await fetch(`/api/${endpoint}`, {
+    const apiUrl = 'https://prod-66.westeurope.logic.azure.com/workflows/53cadbbfef26457bb1707cab957b8926/triggers/When_an_HTTP_request_is_received/paths/invoke/contact?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=Go2-HgQH47bCm74Y0-snhO2IrfcPvMXsfCApOeGPH4U'; // Replace with your actual API endpoint
+    const response = await fetch(`${apiUrl}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
