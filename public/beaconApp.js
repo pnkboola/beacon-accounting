@@ -169,7 +169,7 @@ function submitConsultation(event) {
   console.log('Consultation request:', data);
 
   // Example API call (uncomment in production):
-  // submitToAPI('consultation', data);
+  submitToAPI('consultation', data);
 }
 
 function submitReferral(event) {
@@ -188,7 +188,7 @@ function submitReferral(event) {
   console.log('Referral submitted:', data);
 
   // Example API call (uncomment in production):
-  // submitToAPI('referral', data);
+  submitToAPI('referral', data);
 }
 
 function submitContact(event) {
@@ -237,7 +237,7 @@ function submitQuote(event) {
   console.log('Quote request:', data);
 
   // Example API call (uncomment in production):
-  // submitToAPI('quote', data);
+  submitToAPI('quote', data);
 }
 
 function submitDownload(event) {
@@ -263,7 +263,7 @@ function submitDownload(event) {
   console.log('Download request:', data);
 
   // Example API call (uncomment in production):
-  // submitToAPI('download', data);
+  submitToAPI('download', data);
 }
 
 function submitNewsletter(event) {
@@ -282,7 +282,7 @@ function submitNewsletter(event) {
   console.log('Newsletter subscription:', data);
 
   // Example API call (uncomment in production):
-  // submitToAPI('newsletter', data);
+  submitToAPI('newsletter', data);
 }
 
 // ROI Calculator
