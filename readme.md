@@ -1,6 +1,6 @@
 # Beacon Accounting Website
 
-A professional, responsive website for Beacon Accounting - a UK-focused accounting outsourcing service provider based in India.
+A Professional, responsive website for Beacon Accounting - a UK-focused accounting outsourcing service provider based in India.
 
 ## Features
 
