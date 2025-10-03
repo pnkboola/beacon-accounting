@@ -1336,7 +1336,7 @@
                 if (response.ok) {
                     const data = await response.text();
                     // If API returns a response, use it; otherwise use fallback
-                    const botResponse = data && data.trim() ? data : getFallbackResponse(userMessage);
+                    const botResponse = data && data.trim() && data.Response ? data.Response : getFallbackResponse(userMessage);
                     addMessage(botResponse);
                 } else {
                     // If API call fails, use fallback response
@@ -1361,7 +1361,7 @@
             
             // Check for specific keywords and provide relevant responses
             if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
-                return "Hello! Welcome to Beacon Accounting. I'm here to help you with our UK accounting outsourcing services. What would you like to know?";
+                return "Hello! Welcome to Beacon Accounting. I'm Peter and I'm here to help you with our UK accounting outsourcing services. What would you like to know?";
             } else if (lowerMessage.includes('service') || lowerMessage.includes('what do you do')) {
                 return "Hello! We provide comprehensive accounting outsourcing services to UK firms, including bookkeeping, payroll, tax preparation, and compliance. We help reduce costs by 40-60% while maintaining UK GAAP standards.";
             } else if (lowerMessage.includes('price') || lowerMessage.includes('cost') || lowerMessage.includes('pricing')) {
