@@ -1244,23 +1244,15 @@
         }
     </style>
 
-    <!-- Chatbot Configuration -->
-    <script src="chatbot-config.js"></script>
-    
+    <!-- Chatbot Configuration - CORS Fixed on Azure Function -->
     <script>
-        // Ensure CHATBOT_CONFIG is initialized (fallback if external config fails)
-        if (!window.CHATBOT_CONFIG) {
-            window.CHATBOT_CONFIG = {
-                USE_LOCAL_API: false, // Default to direct API for fallback
-                API_URL: 'https://whatsapp-verification-webhook.azurewebsites.net/api/uk-account-assist',
-                API_SECRET: '', 
-                EMAIL_ID: 'info@beaconaccounting.co.uk',
-                FALLBACK_CONFIG: {
-                    API_URL: 'https://whatsapp-verification-webhook.azurewebsites.net/api/uk-account-assist',
-                    EMAIL_ID: 'info@beaconaccounting.co.uk'
-                }
-            };
-        }
+        // Direct API configuration since CORS is now fixed
+        window.CHATBOT_CONFIG = {
+            API_URL: 'https://whatsapp-verification-webhook.azurewebsites.net/api/uk-account-assist',
+            API_SECRET: '',
+            EMAIL_ID: 'info@beaconaccounting.co.uk'
+        };
+    </script>
 
         // Chatbot functionality
         const chatbotToggle = document.getElementById('chatbot-toggle');
@@ -1315,46 +1307,18 @@
                 // Show typing indicator
                 addMessage("Typing...", false);
                 
-                // Ensure configuration is loaded
+                // Direct API call (CORS is now fixed on Azure Function)
                 const config = window.CHATBOT_CONFIG;
-                if (!config) {
-                    throw new Error('Chatbot configuration not found');
-                }
+                const emailId = config.EMAIL_ID || 'info@beaconaccounting.co.uk';
+                const apiSecret = config.API_SECRET || '';
+                const apiEndpoint = apiSecret ? `${config.API_URL}?code=${apiSecret}` : config.API_URL;
                 
-                // Load configuration if not already loaded
-                if (!config.RUNTIME_CONFIG && window.loadChatbotConfig) {
-                    try {
-                        await window.loadChatbotConfig();
-                    } catch (configError) {
-                        console.warn('Failed to load runtime config:', configError);
-                    }
-                }
-                let apiEndpoint, requestBody;
+                const requestBody = {
+                    EmailId: emailId,
+                    Message: userMessage
+                };
                 
-                // Determine email ID with proper fallback
-                const emailId = config.RUNTIME_CONFIG?.emailId || 
-                               config.FALLBACK_CONFIG?.EMAIL_ID || 
-                               config.EMAIL_ID || 
-                               'info@beaconaccounting.co.uk';
-                
-                if (config.USE_LOCAL_API) {
-                    // Use secure local API proxy (recommended for Azure SWA)
-                    apiEndpoint = config.LOCAL_API_ENDPOINT;
-                    requestBody = {
-                        EmailId: emailId,
-                        Message: userMessage
-                    };
-                } else {
-                    // Direct API call (fallback for local development)
-                    const apiSecret = config.API_SECRET || '';
-                    apiEndpoint = apiSecret ? `${config.API_URL}?code=${apiSecret}` : config.API_URL;
-                    requestBody = {
-                        EmailId: emailId,
-                        Message: userMessage
-                    };
-                }
-                
-                // Call the API (either local proxy or direct)
+                // Call the Azure Function API directly
                 const response = await fetch(apiEndpoint, {
                     method: 'POST',
                     headers: {
