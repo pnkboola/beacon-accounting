@@ -1244,7 +1244,19 @@
         }
     </style>
 
+    <!-- Chatbot Configuration -->
+    <script src="chatbot-config.js"></script>
+    
     <script>
+        // Chatbot Configuration - Set these values in your deployment environment
+        // For Azure Static Web Apps: Set as Application Settings
+        // For local development: Set these window variables in chatbot-config.js
+        window.CHATBOT_CONFIG = {
+            API_URL: window.CHATBOT_API_URL || 'https://whatsapp-verification-webhook.azurewebsites.net/api/uk-account-assist',
+            API_SECRET: window.CHATBOT_API_SECRET || '', // Set this in your environment
+            EMAIL_ID: window.CHATBOT_EMAIL || 'chatbot@beaconaccounting.co.uk'
+        };
+
         // Chatbot functionality
         const chatbotToggle = document.getElementById('chatbot-toggle');
         const chatbotWindow = document.getElementById('chatbot-window');
@@ -1293,24 +1305,77 @@
             }
         }
 
-        function sendBotResponse(userMessage) {
+        async function sendBotResponse(userMessage) {
+            try {
+                // Show typing indicator
+                addMessage("Typing...", false);
+                
+                // Get API endpoint and secret from configuration
+                const config = window.CHATBOT_CONFIG;
+                const apiSecret = config.API_SECRET || process?.env?.CHATBOT_API_SECRET || '';
+                
+                // Construct the full endpoint URL
+                const apiEndpoint = apiSecret ? `${config.API_URL}?code=${apiSecret}` : config.API_URL;
+                
+                // Call the REST API
+                const response = await fetch(apiEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        EmailId: config.EMAIL_ID,
+                        Message: userMessage
+                    })
+                });
+
+                // Remove the typing indicator
+                const messages = chatMessages.children;
+                const lastMessage = messages[messages.length - 1];
+                if (lastMessage && lastMessage.textContent.includes('Typing...')) {
+                    chatMessages.removeChild(lastMessage);
+                }
+
+                if (response.ok) {
+                    const data = await response.text();
+                    // If API returns a response, use it; otherwise use fallback
+                    const botResponse = data && data.trim() ? data : getFallbackResponse(userMessage);
+                    addMessage(botResponse);
+                } else {
+                    // If API call fails, use fallback response
+                    console.error('API call failed:', response.status, response.statusText);
+                    addMessage(getFallbackResponse(userMessage));
+                }
+            } catch (error) {
+                // Remove typing indicator if there was an error
+                const messages = chatMessages.children;
+                const lastMessage = messages[messages.length - 1];
+                if (lastMessage && lastMessage.textContent.includes('Typing...')) {
+                    chatMessages.removeChild(lastMessage);
+                }
+                
+                console.error('Error calling API:', error);
+                addMessage(getFallbackResponse(userMessage));
+            }
+        }
+
+        function getFallbackResponse(userMessage) {
             const lowerMessage = userMessage.toLowerCase();
-            let response = "Hello! Thank you for reaching out to Beacon Accounting. How can I help you today?";
             
             // Check for specific keywords and provide relevant responses
             if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
-                response = "Hello! Welcome to Beacon Accounting. I'm Peter and I'm here to help you with our UK accounting outsourcing services. What would you like to know?";
+                return "Hello! Welcome to Beacon Accounting. I'm here to help you with our UK accounting outsourcing services. What would you like to know?";
             } else if (lowerMessage.includes('service') || lowerMessage.includes('what do you do')) {
-                response = "Hello! We provide comprehensive accounting outsourcing services to UK firms, including bookkeeping, payroll, tax preparation, and compliance. We help reduce costs by 40-60% while maintaining UK GAAP standards.";
+                return "Hello! We provide comprehensive accounting outsourcing services to UK firms, including bookkeeping, payroll, tax preparation, and compliance. We help reduce costs by 40-60% while maintaining UK GAAP standards.";
             } else if (lowerMessage.includes('price') || lowerMessage.includes('cost') || lowerMessage.includes('pricing')) {
-                response = "Hello! Our pricing offers 40-60% cost savings compared to UK rates. For detailed pricing information tailored to your needs, I'd recommend scheduling a free consultation with our team.";
+                return "Hello! Our pricing offers 40-60% cost savings compared to UK rates. For detailed pricing information tailored to your needs, I'd recommend scheduling a free consultation with our team.";
             } else if (lowerMessage.includes('contact') || lowerMessage.includes('consultation')) {
-                response = "Hello! I'd be happy to help you get in touch with our team. You can click the 'Get Free Consultation' button on our website or I can help connect you with our specialists.";
+                return "Hello! I'd be happy to help you get in touch with our team. You can click the 'Get Free Consultation' button on our website or I can help connect you with our specialists.";
             } else if (lowerMessage.includes('thank') || lowerMessage.includes('thanks')) {
-                response = "Hello! You're very welcome! If you have any other questions about our accounting services, feel free to ask.";
+                return "Hello! You're very welcome! If you have any other questions about our accounting services, feel free to ask.";
             }
             
-            addMessage(response);
+            return "Hello! Thank you for reaching out to Beacon Accounting. How can I help you today?";
         }
 
         // Event listeners
