@@ -1042,11 +1042,20 @@
                     <div class="message-avatar">🤖</div>
                     <div class="message-content">
                         <p>Hello! Welcome to Beacon Accounting! 👋</p>
-                        <p>I'm here to help you with any questions about our UK accounting outsourcing services. How can I assist you today?</p>
+                        <p>I'm here to help you with any questions about our UK accounting outsourcing services.</p>
+                        <p>To get started, please provide your contact information:</p>
+                        <div class="chatbot-contact-form" id="chatbot-contact-form">
+                            <div class="form-group-inline">
+                                <input type="email" id="chat-email" placeholder="Enter your email address" />
+                                <span class="form-or">OR</span>
+                                <input type="tel" id="chat-phone" placeholder="Enter your phone number" />
+                            </div>
+                            <button onclick="submitContactInfo()" class="btn-contact-submit">Start Chat</button>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="chatbot-input">
+            <div class="chatbot-input hidden">
                 <input type="text" id="chat-input" placeholder="Type your message..." />
                 <button id="send-message">Send</button>
             </div>
@@ -1231,6 +1240,65 @@
             background: #5a6fd8;
         }
 
+        /* Contact form styles */
+        .chatbot-contact-form {
+            margin-top: 12px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .form-group-inline {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .form-or {
+            text-align: center;
+            font-size: 12px;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        #chat-email, #chat-phone {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            outline: none;
+            font-size: 14px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        #chat-email:focus, #chat-phone:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn-contact-submit {
+            width: 100%;
+            padding: 10px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .btn-contact-submit:hover {
+            background: #5a6fd8;
+        }
+
+        .chatbot-input.hidden {
+            display: none;
+        }
+
         @media (max-width: 480px) {
             .chatbot-window {
                 width: 300px;
@@ -1262,10 +1330,56 @@
         const chatMessages = document.getElementById('chatbot-messages');
 
         let chatOpen = false;
+        let userContactInfo = null; // Store user's contact information
 
         function toggleChat() {
             chatOpen = !chatOpen;
             chatbotWindow.style.display = chatOpen ? 'flex' : 'none';
+        }
+
+        function submitContactInfo() {
+            const email = document.getElementById('chat-email').value.trim();
+            const phone = document.getElementById('chat-phone').value.trim();
+            
+            if (!email && !phone) {
+                alert('Please provide either an email address or phone number to continue.');
+                return;
+            }
+            
+            // Validate email format if provided
+            if (email && !isValidEmail(email)) {
+                alert('Please enter a valid email address.');
+                return;
+            }
+            
+            // Validate phone format if provided
+            if (phone && !isValidPhone(phone)) {
+                alert('Please enter a valid phone number.');
+                return;
+            }
+            
+            // Store contact info
+            userContactInfo = {
+                email: email || null,
+                phone: phone || null
+            };
+            
+            // Hide contact form and show regular chat
+            document.getElementById('chatbot-contact-form').style.display = 'none';
+            document.querySelector('.chatbot-input').classList.remove('hidden');
+            
+            // Add confirmation message
+            addMessage(`Thank you! I have your ${email ? 'email' : 'phone number'}. How can I help you with our accounting services?`, false);
+        }
+
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        function isValidPhone(phone) {
+            const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+            return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''));
         }
 
         function closeChatWindow() {
@@ -1308,14 +1422,19 @@
                 
                 // Direct API call (CORS is now fixed on Azure Function)
                 const config = window.CHATBOT_CONFIG;
-                const emailId = config.EMAIL_ID || 'info@beaconaccounting.co.uk';
                 const apiSecret = config.API_SECRET || '';
                 const apiEndpoint = apiSecret ? `${config.API_URL}?code=${apiSecret}` : config.API_URL;
                 
+                // Use collected contact information in API request
                 const requestBody = {
-                    EmailId: emailId,
+                    EmailId: userContactInfo?.email || config.EMAIL_ID || 'info@beaconaccounting.co.uk',
                     Message: userMessage
                 };
+
+                // Add phone number if provided
+                if (userContactInfo?.phone) {
+                    requestBody.PhoneNumber = userContactInfo.phone;
+                }
                 
                 // Call the Azure Function API directly
                 const response = await fetch(apiEndpoint, {
@@ -1335,9 +1454,20 @@
 
                 if (response.ok) {
                     const data = await response.text();
-                    // If API returns a response, use it; otherwise use fallback
-                    const botResponse = data && data.trim() && data.Response ? data.Response : getFallbackResponse(userMessage);
-                    addMessage(botResponse);
+                    try {
+                        // Parse JSON response
+                        const jsonResponse = JSON.parse(data);
+                        // Extract the Response field from the JSON
+                        const botResponse = jsonResponse && jsonResponse.Success && jsonResponse.Response 
+                            ? jsonResponse.Response 
+                            : getFallbackResponse(userMessage);
+                        addMessage(botResponse);
+                    } catch (parseError) {
+                        // If JSON parsing fails, try to use the raw text response
+                        console.warn('Failed to parse API response as JSON:', parseError);
+                        const botResponse = data && data.trim() ? data : getFallbackResponse(userMessage);
+                        addMessage(botResponse);
+                    }
                 } else {
                     // If API call fails, use fallback response
                     console.error('API call failed:', response.status, response.statusText);
