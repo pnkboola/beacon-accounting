@@ -1260,7 +1260,7 @@
             chatbotWindow.style.display = chatOpen ? 'flex' : 'none';
         }
 
-        function closeChat() {
+        function closeChatWindow() {
             chatOpen = false;
             chatbotWindow.style.display = 'none';
         }
@@ -1286,24 +1286,36 @@
                 addMessage(message, true);
                 chatInput.value = '';
                 
-                // Simulate bot response
+                // Send bot response
                 setTimeout(() => {
-                    const responses = [
-                        "Thank you for your message! Our team will get back to you soon.",
-                        "I understand you're interested in our accounting services. Would you like to schedule a free consultation?",
-                        "That's a great question! For detailed information about our services, please contact our team.",
-                        "We're here to help with all your accounting outsourcing needs. Let me connect you with our specialist.",
-                        "Thanks for reaching out! Our UK accounting experts are available to discuss your requirements."
-                    ];
-                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-                    addMessage(randomResponse);
-                }, 1000);
+                    sendBotResponse(message);
+                }, 800);
             }
+        }
+
+        function sendBotResponse(userMessage) {
+            const lowerMessage = userMessage.toLowerCase();
+            let response = "Hello! Thank you for reaching out to Beacon Accounting. How can I help you today?";
+            
+            // Check for specific keywords and provide relevant responses
+            if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
+                response = "Hello! Welcome to Beacon Accounting. I'm Peter and I'm here to help you with our UK accounting outsourcing services. What would you like to know?";
+            } else if (lowerMessage.includes('service') || lowerMessage.includes('what do you do')) {
+                response = "Hello! We provide comprehensive accounting outsourcing services to UK firms, including bookkeeping, payroll, tax preparation, and compliance. We help reduce costs by 40-60% while maintaining UK GAAP standards.";
+            } else if (lowerMessage.includes('price') || lowerMessage.includes('cost') || lowerMessage.includes('pricing')) {
+                response = "Hello! Our pricing offers 40-60% cost savings compared to UK rates. For detailed pricing information tailored to your needs, I'd recommend scheduling a free consultation with our team.";
+            } else if (lowerMessage.includes('contact') || lowerMessage.includes('consultation')) {
+                response = "Hello! I'd be happy to help you get in touch with our team. You can click the 'Get Free Consultation' button on our website or I can help connect you with our specialists.";
+            } else if (lowerMessage.includes('thank') || lowerMessage.includes('thanks')) {
+                response = "Hello! You're very welcome! If you have any other questions about our accounting services, feel free to ask.";
+            }
+            
+            addMessage(response);
         }
 
         // Event listeners
         chatbotToggle.addEventListener('click', toggleChat);
-        closeChat.addEventListener('click', closeChat);
+        closeChat.addEventListener('click', closeChatWindow);
         sendMessage.addEventListener('click', handleUserMessage);
         
         chatInput.addEventListener('keypress', function(e) {
@@ -1312,12 +1324,12 @@
             }
         });
 
-        // Auto-open chat with welcome message after 3 seconds
+        // Auto-open chat with welcome message after 5 seconds
         setTimeout(() => {
             if (!chatOpen) {
                 toggleChat();
             }
-        }, 3000);
+        }, 5000);
     </script>
 
     <!-- Navigation -->
